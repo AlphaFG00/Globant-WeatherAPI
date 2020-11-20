@@ -26,6 +26,7 @@ docker-compose up
 ## Ejemplo
 
 ```json
+GET http://127.0.0.1:8000/weather?city=Mexico&country=mx
 HTTP 200 OK
 Allow: GET, HEAD, OPTIONS
 Content-Type: application/json
@@ -47,7 +48,7 @@ Vary: Accept
 
 ## Ejemplo fallido
 ```json
-GET /weather
+GET http://127.0.0.1:8000/weather
 HTTP 400 Bad Request
 Allow: GET, HEAD, OPTIONS
 Content-Type: application/json
