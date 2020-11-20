@@ -8,25 +8,14 @@ from rest_framework import status
 import os
 
 
-class cityweathers(APIView, ):
+class cityweather(APIView, ):
     permission_classes = (AllowAny,)
     def get(self, request):
-        if not request.query_params:
-            return Response({"status": "required fields not found"},
-                            status=status.HTTP_404_NOT_FOUND
-                            )
-
-        url = "https://community-open-weather-map.p.rapidapi.com/weather"
-        headers = {
-            'x-rapidapi-key': os.getenv('X-RAPIDAPI-KEY'),
-            'x-rapidapi-host': os.getenv('X-RAPIDAPI-HOST')
-        }
+        is_valid = self.validate(request)
+        if is_valid != True:
+            return is_valid
         params = {"q": f'{request.query_params["city"]}, {request.query_params["country"]}'}
-
-        response = requests.request("GET", url,
-                                    headers=headers,
-                                    params=params)
-        response = json.loads(response.text)
+        response = self.get_weather_api_response(params)
         if response['cod'] != 200:
             return Response(status=response['cod'], data=response['message'])
         else:
@@ -42,3 +31,23 @@ class cityweathers(APIView, ):
                     "geo_coordinates:": f'[{ response["coord"]["lon"]},{response["coord"]["lat"]}]',
                     "requested_time:":  datetime.now()
                 })
+
+    def validate(self, data):
+        city = data.query_params.get('city', None)
+        country = data.query_params.get('country', None)
+        if city is None or country is None:
+            return Response({"status": "required fields not found"},
+                            status=status.HTTP_400_BAD_REQUEST
+                            )
+        if len(country) != 2:
+            return Response({'status': 'country invalid length'}, status=status.HTTP_400_BAD_REQUEST)
+        return True
+
+    def get_weather_api_response(self, params):
+        url = "https://community-open-weather-map.p.rapidapi.com/weather"
+        headers = {
+            'x-rapidapi-key': os.getenv('X-RAPIDAPI-KEY'),
+            'x-rapidapi-host': os.getenv('X-RAPIDAPI-HOST')
+        }
+        response = requests.request("GET", url, headers=headers, params=params)
+        return json.loads(response.text)

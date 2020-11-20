@@ -1,6 +1,6 @@
 from django.urls import path, include
-from citiesweather.api.v1.views import cityweathers
+from citiesweather.api.v1.views import cityweather
 
 urlpatterns = [
-    path('weather', cityweathers.as_view())
+    path('weather', cityweather.as_view())
 ]
